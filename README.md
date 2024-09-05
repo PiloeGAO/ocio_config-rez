@@ -80,7 +80,7 @@ This project allow you to have a ready to use rez package for OCIO-Config. On bu
 This rez package was tested with the following versions:
 
 * Python 3.10+
-* Rez 2.112.0+
+* Rez 3.1.1+
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -180,7 +180,7 @@ Leo Depoix - [LinkedIn][linkedin-url] - [leodepoix.fr](www.leodepoix.fr)
 <!-- ACKNOWLEDGMENTS -->
 ## Proudly used in production by:
 
-* Nobody
+* [Piktura](https://www.piktura.fr/)
 
 _If you are using this package in your studio, contact me on [LinkedIn][linkedin-url] and I will update the list with your name and a link._
 
