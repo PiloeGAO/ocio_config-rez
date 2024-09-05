@@ -2,6 +2,7 @@
 
 import os
 import os.path
+import re
 import shutil
 import sys
 import urllib.request
@@ -9,6 +10,28 @@ import urllib.request
 DOWNLOAD_URL = "https://github.com/AcademySoftwareFoundation/OpenColorIO-Config-ACES/releases/download/v{MAJOR}.{MINOR}.{PATCH}/{filename}"
 
 FILE_NAME = "{NAME}-config-v{MAJOR}.{MINOR}.{PATCH}_aces-v{ACES_MAJOR}.{ACES_MINOR}_ocio-v{OCIO_MAJOR}.{OCIO_MINOR}.ocio"
+
+OCIO_VERSION_PACKAGE_REGEX = (
+    r"\.?(?P<package>.+)-(?P<major>\d+).(?P<minor>\d+)(.(?P<patch>\d+))?"
+)
+
+
+def get_ocio_version():
+    """Get the version of OCIO.
+
+    This will first check for the ephemeral ocio package and then the `$OCIO_VERSION` environement variable.
+
+    Returns:
+        tuple(int, int, int): OCIO version numbers.
+    """
+    rez_variants = os.environ.get("REZ_BUILD_VARIANT_REQUIRES").split(" ")
+    for variant in rez_variants:
+        match = re.match(OCIO_VERSION_PACKAGE_REGEX, variant)
+
+        if match.group("package") == "ocio":
+            return match.group("major"), match.group("minor"), match.group("patch")
+
+    return os.environ.get("OCIO_VERSION", "2.3").split(".")
 
 
 def build(source_path, build_path, install_path, targets):
@@ -25,12 +48,8 @@ def build(source_path, build_path, install_path, targets):
     ).split(".")
 
     # Variants can be used later if required.
-    aces_major, aces_minor = os.environ.get(
-        "ACES_VERSION", "1.3"
-    ).split(".")
-    ocio_major, ocio_minor = os.environ.get(
-        "OCIO_VERSION", "2.0"
-    ).split(".")
+    aces_major, aces_minor = os.environ.get("ACES_VERSION", "1.3").split(".")
+    ocio_major, ocio_minor, _ = get_ocio_version()
 
     ocio_file = FILE_NAME.format(
         NAME=os.environ.get("OCIO_CONFIG_NAME", "studio"),
@@ -46,7 +65,7 @@ def build(source_path, build_path, install_path, targets):
         MAJOR=package_major,
         MINOR=package_minor,
         PATCH=package_patch,
-        filename=ocio_file
+        filename=ocio_file,
     )
     build_filepath = os.path.join(build_path, "ocio-config.ocio")
 
@@ -66,10 +85,10 @@ def build(source_path, build_path, install_path, targets):
         _install()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     build(
-        source_path=os.environ['REZ_BUILD_SOURCE_PATH'],
-        build_path=os.environ['REZ_BUILD_PATH'],
-        install_path=os.environ['REZ_BUILD_INSTALL_PATH'],
-        targets=sys.argv[1:]
+        source_path=os.environ["REZ_BUILD_SOURCE_PATH"],
+        build_path=os.environ["REZ_BUILD_PATH"],
+        install_path=os.environ["REZ_BUILD_INSTALL_PATH"],
+        targets=sys.argv[1:],
     )
