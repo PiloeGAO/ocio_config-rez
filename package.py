@@ -1,6 +1,6 @@
 name = "ocio_config"
 
-version = "2.0.0"
+version = "2.1.0"
 
 authors = ["ASWF"]
 
@@ -13,8 +13,7 @@ tools = []
 requires = []
 
 variants = [
-    [".ocio-2.1.0"],
-    [".ocio-2.2.0"],
+    [".ocio-2.3.0"],
 ]
 
 uuid = "aswf.ocio-config"
