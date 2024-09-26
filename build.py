@@ -7,7 +7,7 @@ import shutil
 import sys
 import urllib.request
 
-DOWNLOAD_URL = "https://github.com/AcademySoftwareFoundation/OpenColorIO-Config-ACES/releases/download/v{MAJOR}.{MINOR}.{PATCH}/{filename}"
+DOWNLOAD_URL = "https://github.com/AcademySoftwareFoundation/OpenColorIO-Config-ACES/releases/download/{version_tag}/{filename}"
 
 FILE_NAME = "{NAME}-config-v{MAJOR}.{MINOR}.{PATCH}_aces-v{ACES_MAJOR}.{ACES_MINOR}_ocio-v{OCIO_MAJOR}.{OCIO_MINOR}.ocio"
 
@@ -61,10 +61,14 @@ def build(source_path, build_path, install_path, targets):
         OCIO_MAJOR=ocio_major,
         OCIO_MINOR=ocio_minor,
     )
+
+    # This  fix is needed because the release tags are different for versions 2+.
+    version_tag = f"v{package_major}-{package_minor}-{package_patch}"
+    if int(package_major) == 2 and int(package_minor) in (0, 1):
+        version_tag = "v2.0.0-v2.1.0"
+
     download_url = DOWNLOAD_URL.format(
-        MAJOR=package_major,
-        MINOR=package_minor,
-        PATCH=package_patch,
+        version_tag=version_tag,
         filename=ocio_file,
     )
     build_filepath = os.path.join(build_path, "ocio-config.ocio")
