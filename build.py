@@ -30,7 +30,7 @@ def get_aces_version():
         if match.group("package") == "aces":
             return match.group("major"), match.group("minor"), match.group("patch")
 
-    return os.environ.get("ACES_VERSION", "1.3.0").split(".")
+    return os.environ.get("ACES_VERSION", "2.0.0").split(".")
 
 def get_ocio_version():
     """Get the version of OCIO.
@@ -78,10 +78,7 @@ def build(source_path, build_path, install_path, targets):
         OCIO_MINOR=ocio_minor,
     )
 
-    # This  fix is needed because the release tags are different for versions 2+.
-    version_tag = f"v{package_major}-{package_minor}-{package_patch}"
-    if int(package_major) == 2 and int(package_minor) in (1, 2):
-        version_tag = "v2.1.0-v2.2.0"
+    version_tag = f"v{package_major}.{package_minor}.{package_patch}"
 
     download_url = DOWNLOAD_URL.format(
         version_tag=version_tag,
