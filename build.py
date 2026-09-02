@@ -11,10 +11,26 @@ DOWNLOAD_URL = "https://github.com/AcademySoftwareFoundation/OpenColorIO-Config-
 
 FILE_NAME = "{NAME}-config-v{MAJOR}.{MINOR}.{PATCH}_aces-v{ACES_MAJOR}.{ACES_MINOR}_ocio-v{OCIO_MAJOR}.{OCIO_MINOR}.ocio"
 
-OCIO_VERSION_PACKAGE_REGEX = (
+REZ_VERSION_EPHEMERAL_PACKAGE_REGEX = (
     r"\.?(?P<package>.+)-(?P<major>\d+).(?P<minor>\d+)(.(?P<patch>\d+))?"
 )
 
+def get_aces_version():
+    """Get the version of ACES.
+
+    This will first check for the ephemeral aces package and then the `$ACES_VERSION` environement variable.
+
+    Returns:
+        tuple(int, int, int): OCIO version numbers.
+    """
+    rez_variants = os.environ.get("REZ_BUILD_VARIANT_REQUIRES").split(" ")
+    for variant in rez_variants:
+        match = re.match(REZ_VERSION_EPHEMERAL_PACKAGE_REGEX, variant)
+
+        if match.group("package") == "aces":
+            return match.group("major"), match.group("minor"), match.group("patch")
+
+    return os.environ.get("ACES_VERSION", "1.3.0").split(".")
 
 def get_ocio_version():
     """Get the version of OCIO.
@@ -26,12 +42,12 @@ def get_ocio_version():
     """
     rez_variants = os.environ.get("REZ_BUILD_VARIANT_REQUIRES").split(" ")
     for variant in rez_variants:
-        match = re.match(OCIO_VERSION_PACKAGE_REGEX, variant)
+        match = re.match(REZ_VERSION_EPHEMERAL_PACKAGE_REGEX, variant)
 
         if match.group("package") == "ocio":
             return match.group("major"), match.group("minor"), match.group("patch")
 
-    return os.environ.get("OCIO_VERSION", "2.3").split(".")
+    return os.environ.get("OCIO_VERSION", "2.4.0").split(".")
 
 
 def build(source_path, build_path, install_path, targets):
@@ -48,7 +64,7 @@ def build(source_path, build_path, install_path, targets):
     ).split(".")
 
     # Variants can be used later if required.
-    aces_major, aces_minor = os.environ.get("ACES_VERSION", "1.3").split(".")
+    aces_major, aces_minor, _ = get_aces_version()
     ocio_major, ocio_minor, _ = get_ocio_version()
 
     ocio_file = FILE_NAME.format(
@@ -64,13 +80,14 @@ def build(source_path, build_path, install_path, targets):
 
     # This  fix is needed because the release tags are different for versions 2+.
     version_tag = f"v{package_major}-{package_minor}-{package_patch}"
-    if int(package_major) == 2 and int(package_minor) in (0, 1):
-        version_tag = "v2.0.0-v2.1.0"
+    if int(package_major) == 2 and int(package_minor) in (1, 2):
+        version_tag = "v2.1.0-v2.2.0"
 
     download_url = DOWNLOAD_URL.format(
         version_tag=version_tag,
         filename=ocio_file,
     )
+    print(download_url)
     build_filepath = os.path.join(build_path, "ocio-config.ocio")
 
     def _build():
